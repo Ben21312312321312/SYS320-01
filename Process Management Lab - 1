@@ -1,0 +1,47 @@
+Deliverable #1
+# Get all processes with names starting with 'C'
+Get-Process | Where-Object { $_.ProcessName -like 'C*' } | 
+Select-Object ProcessName, Id, CPU, StartTime | 
+Format-Table -AutoSize
+Deliverable #2
+Get-Process | ForEach-Object {
+    try {
+        if ($_.MainModule.FileName -notlike "*system32*") {
+            [PSCustomObject]@{
+                ProcessName = $_.ProcessName
+                Id          = $_.Id
+                Path        = $_.MainModule.FileName
+            }
+        }
+    } catch { }
+} | Format-Table -AutoSize
+Deliverable #3
+# Get all stopped services
+$stoppedServices = Get-Service | Where-Object { $_.Status -eq 'Stopped' } | 
+    Sort-Object -Property DisplayName
+
+# Define the output CSV file path
+$outputFile = "$env:USERPROFILE\Desktop\StoppedServices.csv"
+
+# Export the stopped services to a CSV file
+$stoppedServices | Select-Object DisplayName, Name, Status | Export-Csv -Path $outputFile -NoTypeInformation
+
+# Notify the user
+Write-Host "Stopped services have been saved to $outputFile"
+Deliverable #4
+# Define the process name and website
+$processName = "chrome"
+$website = "https://www.champlain.edu"
+
+# Check if an instance of Chrome is running
+$chromeProcess = Get-Process -Name $processName -ErrorAction SilentlyContinue
+
+if ($chromeProcess) {
+    # If Chrome is already running, stop it
+    Stop-Process -Name $processName -Force
+    Write-Host "Google Chrome was running and has been stopped."
+} else {
+    # If Chrome is not running, start it and open the website
+    Start-Process -FilePath "chrome.exe" -ArgumentList $website
+    Write-Host "Google Chrome was not running. It has been started and directed to $website."
+}
