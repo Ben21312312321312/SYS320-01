@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Download the HTML
+curl -s http://10.0.17.6/Assignment.html -o temp.html
+
+# Extract Temperature table data
+temp_lines=$(grep -A5 "The Temprature Read" temp.html | grep -E "<td>" | sed -e 's/<[^>]*>//g' | paste - -)
+
+# Extract Pressure table data
+pressure_lines=$(grep -A5 "The Pressure Read" temp.html | grep -E "<td>" | sed -e 's/<[^>]*>//g' | paste - -)
+
+# Merge based on timestamps
+while IFS= read -r temp; do
+    temp_val=$(echo "$temp" | awk '{print $1}')
+    temp_time=$(echo "$temp" | cut -d' ' -f2-)
+
+    # Find matching pressure reading by datetime
+    matching_pressure=$(echo "$pressure_lines" | grep "$temp_time" | awk '{print $1}')
+
+    echo "$matching_pressure $temp_val $temp_time"
+done <<< "$temp_lines"
+
+# Clean up
+rm temp.html
+
