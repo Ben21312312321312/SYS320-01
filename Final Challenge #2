@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Check for two arguments
+if [ "$#" -ne 2 ]; then
+  echo "Usage: $0 access.log IOC.txt"
+  exit 1
+fi
+
+log_file=$1
+ioc_file=$2
+
+# Clear or create report.txt
+> report.txt
+
+# Loop through each IOC and search log
+while read -r ioc; do
+  grep --no-filename "$ioc" "$log_file" | while read -r line; do
+    ip=$(echo "$line" | awk '{print $1}')
+    datetime=$(echo "$line" | awk '{print $4}' | tr -d '[')
+    page=$(echo "$line" | cut -d\" -f2 | awk '{print $2}')
+    echo "$ip $datetime $page" >> report.txt
+  done
+done < "$ioc_file"
