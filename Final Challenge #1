@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Set the target URL
+url="http://10.0.17.6/IOC.html"
+
+# Use curl to fetch the IOC list and clean the output
+curl -s "$url" | sed -n '/<pre>/,/<\/pre>/p' | sed 's/<[^>]*>//g' > IOC.txt
