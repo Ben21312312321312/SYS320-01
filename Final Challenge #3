@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Set input and output
+input="report.txt"
+output="report.html"
+
+# Create the HTML structure
+echo "<html>" > "$output"
+echo "<body>" >> "$output"
+echo "<h3>Access logs with IOC indicators:</h3>" >> "$output"
+echo "<table border=\"1\">" >> "$output"
+
+# Read from report.txt and convert to table rows
+while IFS= read -r line; do
+  ip=$(echo "$line" | awk '{print $1}')
+  datetime=$(echo "$line" | awk '{print $2}')
+  path=$(echo "$line" | cut -d' ' -f3-)
+  echo "  <tr><td>$ip</td><td>$datetime</td><td>$path</td></tr>" >> "$output"
+done < "$input"
+
+# Close HTML tags
+echo "</table>" >> "$output"
+echo "</body>" >> "$output"
+echo "</html>" >> "$output"
+
+# Move the final HTML report to web server directory
+sudo mv "$output" /var/www/html/
